@@ -1,0 +1,34 @@
+name: Jest Code Coverage Service 2
+
+on:
+  push:
+    paths:
+      - "service2/**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  jest_coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.x
+
+      - name: Install dependencies for service2
+        run: npm install
+        working-directory: ./service2
+
+      - name: Run linting for service2
+        run: npm run lint
+        working-directory: ./service2
+
+      - name: Run Jest tests for service2 and generate coverage report
+        run: npm test
+        working-directory: ./service2

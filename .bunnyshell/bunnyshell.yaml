@@ -1,0 +1,64 @@
+kind: Environment
+name: preview
+type: primary
+urlHandle: la24ab
+components:
+    -
+        kind: Database
+        name: mongo-service
+        dockerCompose:
+            image: mongo
+            ports:
+                - '27017:27017'
+    -
+        kind: Service
+        name: rabbitmq
+        dockerCompose:
+            environment:
+                RABBITMQ_DEFAULT_PASS: password
+                RABBITMQ_DEFAULT_USER: user
+            image: 'rabbitmq:3-management'
+            ports:
+                - '5672:5672'
+                - '15672:15672'
+        hosts:
+            -
+                hostname: 'rabbitmq-{{ env.base_domain }}'
+                path: /
+                servicePort: 5672
+    -
+        kind: Application
+        name: service1
+        gitRepo: 'https://github.com/ImkeLooman/NewDevops.git'
+        gitBranch: main
+        gitApplicationPath: service1
+        dockerCompose:
+            build:
+                context: ./service1
+                dockerfile: Dockerfile
+            environment:
+                MONGODB_HOST: 'mongodb://mongo-service:27017'
+                PORT: '3000'
+                RABBITMQ_HOST: 'amqp://user:password@rabbitmq'
+                RABBITMQ_SEND: channel1
+            ports:
+                - '3000:3000'
+        hosts:
+            -
+                hostname: 'service1-{{ env.base_domain }}'
+                path: /
+                servicePort: 3000
+    -
+        kind: Application
+        name: service2
+        gitRepo: 'https://github.com/ImkeLooman/NewDevops.git'
+        gitBranch: main
+        gitApplicationPath: service2
+        dockerCompose:
+            build:
+                context: ./service2
+                dockerfile: Dockerfile
+            environment:
+                MONGODB_HOST: 'mongodb://mongo-service:27017'
+                RABBITMQ_HOST: 'amqp://user:password@rabbitmq'
+                RABBITMQ_RECEIVE: channel1

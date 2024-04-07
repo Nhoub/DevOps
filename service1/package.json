@@ -1,0 +1,31 @@
+{
+  "name": "service1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest",
+    "lint": "npx eslint ."
+  },
+  "author": "",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "express": "^4.19.1",
+    "express-prom-bundle": "^7.0.0",
+    "mongoose": "^8.2.2",
+    "prom-client": "^15.1.0"
+  },
+  "devDependencies": {
+    "@shelf/jest-mongodb": "^4.2.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "preset": "@shelf/jest-mongodb"
+  }
+}

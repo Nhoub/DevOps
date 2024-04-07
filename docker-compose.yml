@@ -1,0 +1,78 @@
+version: '3'
+
+networks:
+    webnet:
+        driver: bridge
+
+services:
+    service1:
+        build:
+            context: ./service1
+            dockerfile: Dockerfile
+        networks:
+            - webnet
+        ports:
+            - '3005:3005'
+        environment:
+            - PORT=3005
+            - RABBITMQ_SEND=channel1
+            - RABBITMQ_HOST=amqp://user:password@rabbitmq
+            - MONGODB_HOST=mongodb://mongo-service:27017
+
+    service2:
+        build:
+            context: ./service2
+            dockerfile: Dockerfile
+        networks:
+            - webnet
+        environment:
+            - RABBITMQ_RECEIVE=channel1
+            - RABBITMQ_HOST=amqp://user:password@rabbitmq
+            - MONGODB_HOST=mongodb://mongo-service:27017
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        networks:
+            - webnet
+        ports:
+            - '5672:5672' # AMQP
+            - '15672:15672' # Web UI
+        environment:
+            - RABBITMQ_DEFAULT_USER=user
+            - RABBITMQ_DEFAULT_PASS=password
+
+    mongo-service:
+        image: mongo
+        networks:
+            - webnet
+        ports:
+            - '27017:27017'
+
+    mongodb-exporter:
+        image: bitnami/mongodb-exporter:latest
+        networks:
+            - webnet
+        environment:
+            - MONGODB_URI=mongodb://mongo-database:27017
+        ports:
+            - '9216:9216'
+        depends_on:
+            - mongo-service
+
+    prometheus:
+        image: prom/prometheus
+        networks:
+            - webnet
+        volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml
+        ports:
+            - "9090:9090"
+        depends_on:
+            - mongodb-exporter
+
+    grafana:
+        networks:
+            - webnet
+        build: ./grafana
+        ports:
+        - "3000:3000"
